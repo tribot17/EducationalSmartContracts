@@ -3,41 +3,38 @@ import "./IERC20.sol";
 
 contract exercice2  {
     IERC20 token;
-    
-    struct userEntrie {
-        string myString;
-        uint myUint;
-        address myAddress;
+
+    uint secretValue;
+
+    mapping(address => bool) userValided;
+    mapping(address => uint) userValue;
+
+    constructor(address _tokenAddress, uint _secretValue) {
+        token = IERC20(_tokenAddress);
+        secretValue = _secretValue;
     }
 
-    bool valided = false;
-
-    mapping(address => userEntrie) userEntries;
-
-    constructor(address _tokenAddress) {
-    token = IERC20(_tokenAddress);
+    function getSecretValue() view public returns (uint) {
+        return secretValue;
     }
 
-    function enterString(string memory _myString) public {
-        userEntries[msg.sender].myString = _myString; 
+    function enterValue(uint _userValue) public {
+        userValue[msg.sender] = _userValue; 
     }
 
-    function enterUint(uint _myUint) public{
-        userEntries[msg.sender].myUint = _myUint;
+    function getUserValue(address user) public view returns (uint){
+        return userValue[user];
     }
 
-    function enterAddress(address _myAddress) public{
-        require(_myAddress == msg.sender, "it's not your address");
-        userEntries[msg.sender].myAddress = _myAddress;
+    function userHasValided(address user) public view returns (bool) {
+        return userValided[user];
     }
 
 
     function claimToken() public {
-        require(keccak256(bytes(userEntries[msg.sender].myString))  != keccak256(bytes("")), "Enter a string");
-        require(userEntries[msg.sender].myUint != 0, "Enter a uint");
-        require(userEntries[msg.sender].myAddress == msg.sender, "Enter you address");
-        require(valided == false, "you have already claim");
-        valided = true;
+        require(userValue[msg.sender] == secretValue, "Wrong value");
+        require(userValided[msg.sender] == false, "you have already claim");
+        userValided[msg.sender] = true;
         token.transfer(msg.sender, 1 ether);
     }
 }
